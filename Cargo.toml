@@ -4,7 +4,11 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-clap = { version = "4.5.57", features = ["derive"] }
 elf = "0.8.0"
 hex = "0.4.3"
 hexdump = "0.1.2"
+thiserror = "2.0.18"
+
+[dev-dependencies]
+anyhow = "1.0.101"
+clap = { version = "4.5.57", features = ["derive"] }

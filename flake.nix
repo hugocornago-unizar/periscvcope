@@ -1,8 +1,8 @@
 {
-  description = "XDP-Introduction";
+  description = "Rust solution for perscvcope lab.";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
     flake-parts.url = "github:hercules-ci/flake-parts";
   };
 
@@ -23,9 +23,6 @@
 							rustc
 							rust-analyzer
             ];
-          shellHook = ''
-						exec zsh
-          '';
         };
       };
     };
