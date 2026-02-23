@@ -179,6 +179,9 @@ impl Machine {
             }
         };
 
+        // hardwire x0 to 0.
+        self.registers[0] = 0;
+
         if let Some(pc) = new_pc {
             println!("jumping to {pc:#X}");
             self.pc = pc;
