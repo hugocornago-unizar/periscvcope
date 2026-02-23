@@ -5,7 +5,6 @@ use thiserror::Error;
 
 use crate::instruction::Instruction;
 
-
 #[derive(Error, Debug)]
 pub enum Error {
     #[error("ELF file supplied is not built for RISCV.")]
@@ -50,7 +49,7 @@ pub struct ElfFile<'a> {
     parser: ElfBytes<'a, LittleEndian>,
     sections: elf::section::SectionHeaderTable<'a, LittleEndian>,
     segments: elf::segment::SegmentTable<'a, LittleEndian>,
-} 
+}
 
 #[allow(dead_code)] // TODO: remove
 impl<'a> ElfFile<'a> {
@@ -60,7 +59,11 @@ impl<'a> ElfFile<'a> {
         let sections = parser.section_headers().ok_or(Error::NoSectionHeader())?;
         let segments = parser.segments().ok_or(Error::NoSegmentHeader())?;
 
-        let file = Self { parser, sections, segments };
+        let file = Self {
+            parser,
+            sections,
+            segments,
+        };
 
         if !file.check_elf32() {
             return Err(Error::NotELF32());
@@ -73,10 +76,16 @@ impl<'a> ElfFile<'a> {
         Ok(file)
     }
 
-    pub fn find_section_by_name(&self, segment_name: impl Into<String>) -> Result<Rc<[Instruction]>, Error> {
+    pub fn find_section_by_name(
+        &self,
+        segment_name: impl Into<String>,
+    ) -> Result<Rc<[Instruction]>, Error> {
         let segment_name = segment_name.into();
-        let section = self.parser.section_header_by_name(&segment_name)
-            .expect("Already checked the existance for section headers.").ok_or(Error::SectionNotFound(segment_name))?;
+        let section = self
+            .parser
+            .section_header_by_name(&segment_name)
+            .expect("Already checked the existance for section headers.")
+            .ok_or(Error::SectionNotFound(segment_name))?;
 
         let program = self.parser.section_data(&section)?.0;
 
@@ -92,6 +101,4 @@ impl<'a> ElfFile<'a> {
     fn check_elf32(&self) -> bool {
         self.parser.ehdr.class == elf::file::Class::ELF32
     }
-
-
 }
