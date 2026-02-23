@@ -64,7 +64,15 @@ impl Machine {
             .expect("register index not found? check registers array size.")
     }
 
-    pub fn execute(&mut self) -> Result<(), MachineError> {
+    pub fn execute_until_error(&mut self) -> MachineError {
+        loop {
+            if let Err(err) = self.execute_next_instruction() {
+                return err;
+            }
+        }
+    }
+
+    pub fn execute_next_instruction(&mut self) -> Result<(), MachineError> {
         let instr = self
             .instructions
             .get(&self.pc)
@@ -79,6 +87,7 @@ impl Machine {
                 let op = &instr.op();
                 let rd = &mut self.get_mut_register(rtype.rd());
 
+                println!("executing {op}(rd={rd}, rs1={rs1}, rs2={rs2})");
                 executor::execute_rtype(op, rd, rs1, rs2)?
             }
             I(itype) => {
@@ -88,23 +97,28 @@ impl Machine {
                     .get_mut(itype.rd().value() as usize)
                     .expect("register index not found? check registers array size.");
 
+                let op = &instr.op();
                 let imm = format
                     .immediate_value()
                     .expect("I-type should have an immediate value");
 
-                executor::execute_itype(&instr.op(), self.pc, rd, rs1, imm, &self.memory)?
+                println!("executing {op}(rd={rd}, rs1={rs1}, imm={imm})");
+                executor::execute_itype(op, self.pc, rd, rs1, imm, &self.memory)?
             }
             S(stype) => {
                 let rs1 = self.get_register(stype.rs1());
                 let rs2 = self.get_register(stype.rs2());
+                let op = &instr.op();
 
                 let imm = format
                     .immediate_value()
                     .expect("S-type should have an immediate value");
 
-                executor::execute_stype(&instr.op(), rs1, rs2, imm, &mut self.memory)?
+                println!("executing {op}(rs1={rs1}, rs2={rs2}, imm={imm})");
+                executor::execute_stype(op, rs1, rs2, imm, &mut self.memory)?
             }
             U(utype) => {
+                let op = &instr.op();
                 let rd = self
                     .registers
                     .get_mut(utype.rd().value() as usize)
@@ -114,18 +128,23 @@ impl Machine {
                     .immediate_value()
                     .expect("U-type should have an immediate value");
 
-                executor::execute_utype(&instr.op(), self.pc, rd, imm)?
+                println!("executing {op}(rd={rd}, imm={imm})");
+                executor::execute_utype(op, self.pc, rd, imm)?
             }
             B(btype) => {
+                let op = &instr.op();
                 let rs1 = self.get_register(btype.rs1());
                 let rs2 = self.get_register(btype.rs2());
 
                 let imm = format
                     .immediate_value()
                     .expect("S-type should have an immediate value");
-                executor::execute_btype(&instr.op(), self.pc, rs1, rs2, imm)?
+
+                println!("executing {op}(rs1={rs1}, rs2={rs2}, imm={imm})");
+                executor::execute_btype(op, self.pc, rs1, rs2, imm)?
             }
             J(jtype) => {
+                let op = &instr.op();
                 let rd = self
                     .registers
                     .get_mut(jtype.rd().value() as usize)
@@ -134,11 +153,14 @@ impl Machine {
                 let imm = format
                     .immediate_value()
                     .expect("J-type should have an immediate value");
-                executor::execute_jtype(&instr.op(), self.pc, rd, imm)?
+
+                println!("executing {op}(rd={rd}, imm={imm})");
+                executor::execute_jtype(op, self.pc, rd, imm)?
             }
         };
 
         if let Some(pc) = new_pc {
+            println!("jumping to {pc}");
             self.pc = pc;
         }
 
