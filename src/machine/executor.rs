@@ -1,5 +1,5 @@
 use crate::{
-    instruction::parser::Op,
+    instruction::definitions::Op,
     machine::{MachineError, Memory},
 };
 

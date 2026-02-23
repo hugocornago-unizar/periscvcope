@@ -1,11 +1,11 @@
 pub mod formats;
-pub mod parser;
+pub mod definitions;
 
 use thiserror::Error;
 
 use crate::instruction::{
     formats::{InstructionFormat, RType},
-    parser::Op,
+    definitions::Op,
 };
 
 #[derive(Error, Debug)]
@@ -31,7 +31,7 @@ impl Instruction {
         let funct3 = rtype.funct3().value();
         let funct7 = rtype.funct7().value();
 
-        let op = parser::decode_op(opcode, funct3, funct7)
+        let op = definitions::decode_op(opcode, funct3, funct7)
             .ok_or(Error::UnknownInstruction(opcode.to_string()))?;
 
         Ok(Instruction {
