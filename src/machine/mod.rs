@@ -74,10 +74,22 @@ impl Machine {
     }
 
     pub fn execute_until_loop(&mut self) -> Result<(), MachineError> {
+        let mut nops = 0;
         loop {
+            let instr = self
+                .instructions
+                .get(&self.pc)
+                .copied()
+                .ok_or(MachineError::AddressError(self.pc))?;
+
             let current_pc = self.pc;
+
             self.execute_next_instruction()?;
             if self.pc == current_pc { break; };
+            if (current_pc-nops*4..current_pc).contains(&self.pc) { break; }
+            if instr.is_nop() { nops += 1; }
+            else { nops = 0; }
+
         }
         Ok(())
     }
