@@ -25,10 +25,9 @@ fn main() -> Result<()> {
     let slice = file_data.as_slice();
 
     let mut machine = Machine::new(slice)?;
-    let err = machine.execute_until_error();
+    machine.execute_until_loop()?;
 
     println!("Execution complete.");
-    println!("Final error: {}.", err);
 
     Ok(())
 }

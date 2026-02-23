@@ -73,12 +73,13 @@ impl Machine {
             .expect("register index not found? check registers array size.")
     }
 
-    pub fn execute_until_error(&mut self) -> MachineError {
+    pub fn execute_until_loop(&mut self) -> Result<(), MachineError> {
         loop {
-            if let Err(err) = self.execute_next_instruction() {
-                return err;
-            }
+            let current_pc = self.pc;
+            self.execute_next_instruction()?;
+            if self.pc == current_pc { break; };
         }
+        Ok(())
     }
 
     pub fn execute_next_instruction(&mut self) -> Result<(), MachineError> {
