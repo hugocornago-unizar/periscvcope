@@ -1,7 +1,7 @@
 use std::{fs, path};
 
 use color_eyre::eyre::Result;
-use periscvcope::*;
+use periscvcope::{file_parser::ElfFile, *};
 
 use clap::Parser;
 
@@ -28,8 +28,15 @@ fn main() -> Result<()> {
     let elf_file = file_parser::ElfFile::from_buffer(slice)?;
     let section = elf_file.find_section_by_name(arguments.segment_to_dump)?;
 
-    for instruction in section.iter() {
-        println!("{}", instruction.op());
+    let mut memory = elf_file.load_memory(4 * 1024 * 1024);
+    let instructions = ElfFile::load_section(section, &mut memory)?;
+
+    let mut sorted: Vec<_> = instructions.iter().collect();
+    sorted.sort_by_key(|(addr, _)| *addr);
+
+    for instr in sorted {
+        println!("{:08X}: {}", instr.0, instr.1.op());
     }
+
     Ok(())
 }
