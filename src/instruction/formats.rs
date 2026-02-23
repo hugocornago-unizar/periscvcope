@@ -1,7 +1,14 @@
 use bilge::prelude::*;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Format { R, I, S, B, U, J }
+pub enum Format {
+    R,
+    I,
+    S,
+    B,
+    U,
+    J,
+}
 
 impl Format {
     pub fn decode(self, raw: u32) -> InstructionFormat {
@@ -81,27 +88,24 @@ impl InstructionFormat {
             InstructionFormat::R(..) => None,
             InstructionFormat::I(itype) => Some(sign_extend(itype.imm().as_u32(), 12)),
             InstructionFormat::S(stype) => Some({
-                let value =   stype.imm1().as_u32()
-                            | stype.imm2().as_u32() << 6;
+                let value = stype.imm1().as_u32() | stype.imm2().as_u32() << 6;
 
                 sign_extend(value, 12)
             }),
-            InstructionFormat::U(utype) => Some({
-                utype.imm().as_i32() << 12
-            }),
+            InstructionFormat::U(utype) => Some(utype.imm().as_i32() << 12),
             InstructionFormat::B(btype) => Some({
-                let value =   btype.imm1().as_u32() << 11
-                            | btype.imm2().as_u32() << 1
-                            | btype.imm3().as_u32() << 5
-                            | btype.imm4().as_u32() << 12;
+                let value = btype.imm1().as_u32() << 11
+                    | btype.imm2().as_u32() << 1
+                    | btype.imm3().as_u32() << 5
+                    | btype.imm4().as_u32() << 12;
 
                 sign_extend(value, 13)
             }),
             InstructionFormat::J(jtype) => Some({
-                let value =   jtype.imm1().as_u32() << 12
-                            | jtype.imm2().as_u32() << 11
-                            | jtype.imm3().as_u32() << 1
-                            | jtype.imm4().as_u32() << 20;
+                let value = jtype.imm1().as_u32() << 12
+                    | jtype.imm2().as_u32() << 11
+                    | jtype.imm3().as_u32() << 1
+                    | jtype.imm4().as_u32() << 20;
 
                 sign_extend(value, 21)
             }),
@@ -111,47 +115,47 @@ impl InstructionFormat {
 
 #[bitsize(32)]
 #[derive(FromBits, DebugBits, Clone, Copy)]
-pub struct RType { 
+pub struct RType {
     pub opcode: u7,
     rd: u5,
     pub funct3: u3,
     rs1: u5,
     rs2: u5,
-    pub funct7: u7
+    pub funct7: u7,
 }
 
 #[bitsize(32)]
 #[derive(FromBits, DebugBits, Clone, Copy)]
-pub struct IType { 
+pub struct IType {
     opcode: u7,
     rd: u5,
     funct3: u3,
     rs1: u5,
-    imm: u12
+    imm: u12,
 }
 
 #[bitsize(32)]
 #[derive(FromBits, DebugBits, Clone, Copy)]
-pub struct SType { 
+pub struct SType {
     opcode: u7,
     imm1: u5,
     funct3: u3,
     rs1: u5,
     rs2: u5,
-    imm2: u7
+    imm2: u7,
 }
 
 #[bitsize(32)]
 #[derive(FromBits, DebugBits, Clone, Copy)]
-pub struct UType { 
+pub struct UType {
     opcode: u7,
     rd: u5,
-    imm: u20
+    imm: u20,
 }
 
 #[bitsize(32)]
 #[derive(FromBits, DebugBits, Clone, Copy)]
-pub struct BType { 
+pub struct BType {
     opcode: u7,
     imm1: u1,
     imm2: u4,
@@ -164,11 +168,11 @@ pub struct BType {
 
 #[bitsize(32)]
 #[derive(FromBits, DebugBits, Clone, Copy)]
-pub struct JType { 
+pub struct JType {
     opcode: u7,
     rd: u5,
     imm1: u8,
     imm2: u1,
     imm3: u10,
-    imm4: u1
+    imm4: u1,
 }

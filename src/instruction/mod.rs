@@ -1,10 +1,12 @@
-use std::rc::Rc;
 mod formats;
 mod parser;
 
 use thiserror::Error;
 
-use crate::instruction::{formats::{InstructionFormat, RType}, parser::Op};
+use crate::instruction::{
+    formats::{InstructionFormat, RType},
+    parser::Op,
+};
 
 #[derive(Error, Debug)]
 pub enum Error {
@@ -32,7 +34,11 @@ impl Instruction {
         let op = parser::decode_op(opcode, funct3, funct7)
             .ok_or(Error::UnknownInstruction(opcode.to_string()))?;
 
-        Ok(Instruction { op, format: op.format().decode(raw), raw_bytes: bytes })
+        Ok(Instruction {
+            op,
+            format: op.format().decode(raw),
+            raw_bytes: bytes,
+        })
     }
 
     pub fn parse_program<'a>(program: impl Into<&'a [u8]>) -> Result<Vec<Instruction>, Error> {

@@ -1,5 +1,3 @@
-use std::rc::Rc;
-
 use elf::{ElfBytes, abi, endian::LittleEndian};
 use thiserror::Error;
 

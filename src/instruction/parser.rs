@@ -45,7 +45,6 @@ macro_rules! define_instructions {
     (@field) => { _ };
 }
 
-
 impl std::fmt::Display for Op {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self)
