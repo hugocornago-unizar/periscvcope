@@ -1,6 +1,6 @@
 use std::{fs, path};
 
-use anyhow::Result;
+use color_eyre::eyre::Result;
 use periscvcope::*;
 
 use clap::Parser;
@@ -13,6 +13,7 @@ struct ProgramArguments {
 }
 
 fn main() -> Result<()> {
+    color_eyre::install()?;
     let arguments = ProgramArguments::parse();
 
     let path = path::PathBuf::from(&arguments.program_path);
@@ -27,6 +28,8 @@ fn main() -> Result<()> {
     let elf_file = file_parser::ElfFile::from_buffer(slice)?;
     let section = elf_file.find_section_by_name(arguments.segment_to_dump)?;
 
-    dbg!(section);
+    for instruction in section.iter() {
+        println!("{}", instruction.op());
+    }
     Ok(())
 }
