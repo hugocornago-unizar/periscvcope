@@ -1,4 +1,7 @@
-use elf::{ElfBytes, abi, endian::LittleEndian};
+use std::collections::HashMap;
+
+use color_eyre::Section;
+use elf::{ElfBytes, abi, endian::LittleEndian, section::SectionHeader};
 use thiserror::Error;
 
 use crate::instruction::Instruction;
@@ -74,10 +77,54 @@ impl<'a> ElfFile<'a> {
         Ok(file)
     }
 
+    pub fn entry_point(&self) -> u32 {
+        self.parser.ehdr.e_entry as u32
+    }
+
+    pub fn load_memory(&self, size: usize) -> Vec<u8> {
+        let mut memory = vec![0u8; size];
+
+        self.segments
+            .iter()
+            .filter(|phdr| phdr.p_type == abi::PT_LOAD)
+            .map(|phdr| {
+                (
+                    phdr.p_vaddr,
+                    self.parser
+                        .segment_data(&phdr)
+                        .expect("IntegerOverflow error"),
+                )
+            })
+            .for_each(|(addr, data)| {
+                let start = addr as usize;
+                let end = start + data.len() as usize;
+                memory[start..end].copy_from_slice(data);
+            });
+
+        memory
+    }
+
+    pub fn load_section(section: SectionHeader, memory: &[u8]) -> Result<HashMap<u32, Instruction>, Error> {
+        let start = section.sh_addr as usize;
+        let size = section.sh_size as usize;
+        let data = &memory[start..start+size];
+
+        data
+            .chunks_exact(4)
+            .enumerate()
+            .map(|(i, bytes)| {
+                let addr = start + (i * 4);
+                let instr = Instruction::from_bytes(bytes.try_into().expect("it should work"))?;
+
+                Ok((addr as u32, instr))
+            })
+            .collect::<Result<_, _>>()
+    }
+
     pub fn find_section_by_name(
         &self,
         segment_name: impl Into<String>,
-    ) -> Result<Vec<Instruction>, Error> {
+    ) -> Result<SectionHeader, Error> {
         let segment_name = segment_name.into();
         let section = self
             .parser
@@ -85,9 +132,7 @@ impl<'a> ElfFile<'a> {
             .expect("Already checked the existance for section headers.")
             .ok_or(Error::SectionNotFound(segment_name))?;
 
-        let program = self.parser.section_data(&section)?.0;
-
-        Ok(Instruction::parse_program(program)?)
+        Ok(section)
     }
 
     /* Checks if the ElfFile is built for RISCV. */
