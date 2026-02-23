@@ -1,0 +1,147 @@
+use std::collections::HashMap;
+
+mod executor;
+
+use bilge::prelude::{Integer, u5};
+
+type Memory = Vec<u8>;
+
+use crate::{
+    file_parser::{self, ElfFile},
+    instruction::{self, Instruction},
+};
+
+#[derive(thiserror::Error, Debug)]
+pub enum MachineError {
+    #[error("AddressError: Tried to access an invalid pc address. pc={0}")]
+    AddressError(u32),
+
+    #[error("MemoryError: Tried to access an invalid memory address. addr={0}")]
+    MemoryError(u32),
+
+    #[error("Error parsing the file: {0}")]
+    ElfError(file_parser::Error),
+}
+
+impl From<file_parser::Error> for MachineError {
+    fn from(value: file_parser::Error) -> Self {
+        Self::ElfError(value)
+    }
+}
+
+pub struct Machine {
+    pc: u32,
+    registers: [i32; 32],
+    instructions: HashMap<u32, Instruction>,
+    memory: Vec<u8>,
+}
+
+impl Machine {
+    pub fn new(data: &[u8]) -> Result<Machine, MachineError> {
+        let file = ElfFile::from_buffer(data)?;
+        let memory = file.load_memory(4 * 1024 * 1024);
+        let text_section = file.find_section_by_name(".text")?;
+        let instructions = ElfFile::load_section(text_section, &memory)?;
+
+        Ok(Machine {
+            pc: file.entry_point(),
+            registers: [0; 32],
+            instructions,
+            memory,
+        })
+    }
+
+    fn get_register(&self, index: u5) -> i32 {
+        self.registers
+            .get(index.as_usize())
+            .copied()
+            .expect("register index not found? check registers array size.")
+    }
+
+    fn get_mut_register(&mut self, index: u5) -> &mut i32 {
+        self.registers
+            .get_mut(index.as_usize())
+            .expect("register index not found? check registers array size.")
+    }
+
+    pub fn execute(&mut self) -> Result<(), MachineError> {
+        let instr = self
+            .instructions
+            .get(&self.pc)
+            .ok_or(MachineError::AddressError(self.pc))?;
+        let format = instr.format();
+
+        use instruction::formats::InstructionFormat::*;
+        let new_pc = match format {
+            R(rtype) => {
+                let rs1 = self.get_register(rtype.rs1());
+                let rs2 = self.get_register(rtype.rs2());
+                let op = &instr.op();
+                let rd = &mut self.get_mut_register(rtype.rd());
+
+                executor::execute_rtype(op, rd, rs1, rs2)?
+            }
+            I(itype) => {
+                let rs1 = self.get_register(itype.rs1());
+                let rd = self
+                    .registers
+                    .get_mut(itype.rd().value() as usize)
+                    .expect("register index not found? check registers array size.");
+
+                let imm = format
+                    .immediate_value()
+                    .expect("I-type should have an immediate value");
+
+                executor::execute_itype(&instr.op(), self.pc, rd, rs1, imm, &self.memory)?
+            }
+            S(stype) => {
+                let rs1 = self.get_register(stype.rs1());
+                let rs2 = self.get_register(stype.rs2());
+
+                let imm = format
+                    .immediate_value()
+                    .expect("S-type should have an immediate value");
+
+                executor::execute_stype(&instr.op(), rs1, rs2, imm, &mut self.memory)?
+            }
+            U(utype) => {
+                let rd = self
+                    .registers
+                    .get_mut(utype.rd().value() as usize)
+                    .expect("register index not found? check registers array size.");
+
+                let imm = format
+                    .immediate_value()
+                    .expect("U-type should have an immediate value");
+
+                executor::execute_utype(&instr.op(), self.pc, rd, imm)?
+            }
+            B(btype) => {
+                let rs1 = self.get_register(btype.rs1());
+                let rs2 = self.get_register(btype.rs2());
+
+                let imm = format
+                    .immediate_value()
+                    .expect("S-type should have an immediate value");
+                executor::execute_btype(&instr.op(), self.pc, rs1, rs2, imm)?
+            }
+            J(jtype) => {
+                let rd = self
+                    .registers
+                    .get_mut(jtype.rd().value() as usize)
+                    .expect("register index not found? check registers array size.");
+
+                let imm = format
+                    .immediate_value()
+                    .expect("J-type should have an immediate value");
+                executor::execute_jtype(&instr.op(), self.pc, rd, imm)?
+            }
+        };
+
+        if let Some(pc) = new_pc {
+            self.pc = pc;
+        }
+
+        Ok(())
+    }
+}

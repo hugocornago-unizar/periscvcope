@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use color_eyre::Section;
 use elf::{ElfBytes, abi, endian::LittleEndian, section::SectionHeader};
 use thiserror::Error;
 
@@ -97,20 +96,22 @@ impl<'a> ElfFile<'a> {
             })
             .for_each(|(addr, data)| {
                 let start = addr as usize;
-                let end = start + data.len() as usize;
+                let end = start + data.len();
                 memory[start..end].copy_from_slice(data);
             });
 
         memory
     }
 
-    pub fn load_section(section: SectionHeader, memory: &[u8]) -> Result<HashMap<u32, Instruction>, Error> {
+    pub fn load_section(
+        section: SectionHeader,
+        memory: &[u8],
+    ) -> Result<HashMap<u32, Instruction>, Error> {
         let start = section.sh_addr as usize;
         let size = section.sh_size as usize;
-        let data = &memory[start..start+size];
+        let data = &memory[start..start + size];
 
-        data
-            .chunks_exact(4)
+        data.chunks_exact(4)
             .enumerate()
             .map(|(i, bytes)| {
                 let addr = start + (i * 4);

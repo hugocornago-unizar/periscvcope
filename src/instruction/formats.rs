@@ -117,62 +117,62 @@ impl InstructionFormat {
 #[derive(FromBits, DebugBits, Clone, Copy)]
 pub struct RType {
     pub opcode: u7,
-    rd: u5,
+    pub rd: u5,
     pub funct3: u3,
-    rs1: u5,
-    rs2: u5,
+    pub rs1: u5,
+    pub rs2: u5,
     pub funct7: u7,
 }
 
 #[bitsize(32)]
 #[derive(FromBits, DebugBits, Clone, Copy)]
 pub struct IType {
-    opcode: u7,
-    rd: u5,
-    funct3: u3,
-    rs1: u5,
-    imm: u12,
+    pub opcode: u7,
+    pub rd: u5,
+    pub funct3: u3,
+    pub rs1: u5,
+    pub imm: u12,
 }
 
 #[bitsize(32)]
 #[derive(FromBits, DebugBits, Clone, Copy)]
 pub struct SType {
-    opcode: u7,
-    imm1: u5,
-    funct3: u3,
-    rs1: u5,
-    rs2: u5,
-    imm2: u7,
+    pub opcode: u7,
+    pub imm1: u5,
+    pub funct3: u3,
+    pub rs1: u5,
+    pub rs2: u5,
+    pub imm2: u7,
 }
 
 #[bitsize(32)]
 #[derive(FromBits, DebugBits, Clone, Copy)]
 pub struct UType {
-    opcode: u7,
-    rd: u5,
-    imm: u20,
+    pub opcode: u7,
+    pub rd: u5,
+    pub imm: u20,
 }
 
 #[bitsize(32)]
 #[derive(FromBits, DebugBits, Clone, Copy)]
 pub struct BType {
-    opcode: u7,
-    imm1: u1,
-    imm2: u4,
-    funct3: u3,
-    rs1: u5,
-    rs2: u5,
-    imm3: u6,
-    imm4: u1,
+    pub opcode: u7,
+    pub imm1: u1,
+    pub imm2: u4,
+    pub funct3: u3,
+    pub rs1: u5,
+    pub rs2: u5,
+    pub imm3: u6,
+    pub imm4: u1,
 }
 
 #[bitsize(32)]
 #[derive(FromBits, DebugBits, Clone, Copy)]
 pub struct JType {
-    opcode: u7,
-    rd: u5,
-    imm1: u8,
-    imm2: u1,
-    imm3: u10,
-    imm4: u1,
+    pub opcode: u7,
+    pub rd: u5,
+    pub imm1: u8,
+    pub imm2: u1,
+    pub imm3: u10,
+    pub imm4: u1,
 }

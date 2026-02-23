@@ -51,28 +51,28 @@ impl std::fmt::Display for Op {
     }
 }
 
+/* From RISCV_CARD.pdf */
 define_instructions! {
     add  : R { opcode: 0b0110011, funct3: 0x0, funct7: 0x00 },
     sub  : R { opcode: 0b0110011, funct3: 0x0, funct7: 0x20 },
-    sll  : R { opcode: 0b0110011, funct3: 0x1, funct7: 0x00 },
-    slt  : R { opcode: 0b0110011, funct3: 0x2, funct7: 0x00 },
-    sltu : R { opcode: 0b0110011, funct3: 0x3, funct7: 0x00 },
     xor  : R { opcode: 0b0110011, funct3: 0x4, funct7: 0x00 },
-    srl  : R { opcode: 0b0110011, funct3: 0x5, funct7: 0x00 },
-    sra  : R { opcode: 0b0110011, funct3: 0x5, funct7: 0x20 },
     or   : R { opcode: 0b0110011, funct3: 0x6, funct7: 0x00 },
     and  : R { opcode: 0b0110011, funct3: 0x7, funct7: 0x00 },
-
-    slli  : I { opcode: 0b0010011, funct3: 0x1, funct7: 0x00 },
-    srli  : I { opcode: 0b0010011, funct3: 0x5, funct7: 0x00 },
-    srai  : I { opcode: 0b0010011, funct3: 0x5, funct7: 0x20 },
+    sll  : R { opcode: 0b0110011, funct3: 0x1, funct7: 0x00 },
+    srl  : R { opcode: 0b0110011, funct3: 0x5, funct7: 0x00 },
+    sra  : R { opcode: 0b0110011, funct3: 0x5, funct7: 0x20 },
+    slt  : R { opcode: 0b0110011, funct3: 0x2, funct7: 0x00 },
+    sltu : R { opcode: 0b0110011, funct3: 0x3, funct7: 0x00 },
 
     addi  : I { opcode: 0b0010011, funct3: 0x0 },
-    slti  : I { opcode: 0b0010011, funct3: 0x2 },
-    sltiu : I { opcode: 0b0010011, funct3: 0x3 },
     xori  : I { opcode: 0b0010011, funct3: 0x4 },
     ori   : I { opcode: 0b0010011, funct3: 0x6 },
     andi  : I { opcode: 0b0010011, funct3: 0x7 },
+    slli  : I { opcode: 0b0010011, funct3: 0x1, funct7: 0x00 },
+    srli  : I { opcode: 0b0010011, funct3: 0x5, funct7: 0x00 },
+    srai  : I { opcode: 0b0010011, funct3: 0x5, funct7: 0x20 },
+    slti  : I { opcode: 0b0010011, funct3: 0x2 },
+    sltiu : I { opcode: 0b0010011, funct3: 0x3 },
 
     lb  : I { opcode: 0b0000011, funct3: 0x0 },
     lh  : I { opcode: 0b0000011, funct3: 0x1 },
@@ -97,4 +97,7 @@ define_instructions! {
     jal  : J { opcode: 0b1101111 },
 
     jalr : I { opcode: 0b1100111, funct3: 0x0 },
+
+    ecall : I { opcode: 0b1110011, funct3: 0x0, funct7: 0x0 },
+    ebreak : I { opcode: 0b1110011, funct3: 0x0, funct7: 0x1 },
 }

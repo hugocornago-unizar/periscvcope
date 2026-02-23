@@ -1,5 +1,5 @@
-mod formats;
-mod parser;
+pub mod formats;
+pub mod parser;
 
 use thiserror::Error;
 
@@ -39,20 +39,6 @@ impl Instruction {
             format: op.format().decode(raw),
             raw_bytes: bytes,
         })
-    }
-
-    pub fn parse_program<'a>(program: impl Into<&'a [u8]>) -> Result<Vec<Instruction>, Error> {
-        program
-            .into()
-            .chunks_exact(4 /* 32-bits */)
-            .map(|bytes| {
-                Instruction::from_bytes(
-                    bytes
-                        .try_into()
-                        .expect("chunks_exact ensures 4-byte instructions"),
-                )
-            })
-            .collect()
     }
 
     pub fn op(&self) -> Op {
