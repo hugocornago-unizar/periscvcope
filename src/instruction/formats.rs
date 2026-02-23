@@ -88,11 +88,11 @@ impl InstructionFormat {
             InstructionFormat::R(..) => None,
             InstructionFormat::I(itype) => Some(sign_extend(itype.imm().as_u32(), 12)),
             InstructionFormat::S(stype) => Some({
-                let value = stype.imm1().as_u32() | stype.imm2().as_u32() << 6;
+                let value = stype.imm1().as_u32() | stype.imm2().as_u32() << 5;
 
                 sign_extend(value, 12)
             }),
-            InstructionFormat::U(utype) => Some(utype.imm().as_i32() << 12),
+            InstructionFormat::U(utype) => Some(utype.imm().as_i32()),
             InstructionFormat::B(btype) => Some({
                 let value = btype.imm1().as_u32() << 11
                     | btype.imm2().as_u32() << 1

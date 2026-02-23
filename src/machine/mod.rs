@@ -13,10 +13,10 @@ use crate::{
 
 #[derive(thiserror::Error, Debug)]
 pub enum MachineError {
-    #[error("AddressError: Tried to access an invalid pc address. pc={0}")]
+    #[error("AddressError: Tried to access an invalid pc address. pc={0:#X}")]
     AddressError(u32),
 
-    #[error("MemoryError: Tried to access an invalid memory address. addr={0}")]
+    #[error("MemoryError: Tried to access an invalid memory address. addr={0:#X}")]
     MemoryError(u32),
 
     #[error("Error parsing the file: {0}")]
@@ -91,15 +91,20 @@ impl Machine {
         use instruction::formats::InstructionFormat::*;
         let new_pc = match format {
             R(rtype) => {
+                let rs1_index = rtype.rs1();
+                let rs2_index = rtype.rs2();
+                let rd_index = rtype.rd();
                 let rs1 = self.get_register(rtype.rs1());
                 let rs2 = self.get_register(rtype.rs2());
                 let op = &instr.op();
                 let rd = &mut self.get_mut_register(rtype.rd());
 
-                println!("executing {op}(rd={rd:#X}, rs1={rs1:#X}, rs2={rs2:#X})");
+                println!("executing {op}(rd={rd_index} [{rd:#X}], rs1={rs1_index} [{rs1:#X}], rs2={rs2_index} [{rs2:#X}])");
                 executor::execute_rtype(op, rd, rs1, rs2)?
             }
             I(itype) => {
+                let rs1_index = itype.rs1();
+                let rd_index = itype.rd();
                 let rs1 = self.get_register(itype.rs1());
                 let rd = self
                     .registers
@@ -111,10 +116,12 @@ impl Machine {
                     .immediate_value()
                     .expect("I-type should have an immediate value");
 
-                println!("executing {op}(rd={rd:#X}, rs1={rs1:#X}, imm={imm})");
+                println!("executing {op}(rd={rd_index} [{rd:#X}], rs1={rs1_index} [{rs1:#X}], imm={imm})");
                 executor::execute_itype(op, self.pc, rd, rs1, imm, &self.memory)?
             }
             S(stype) => {
+                let rs1_index = stype.rs1();
+                let rs2_index = stype.rs2();
                 let rs1 = self.get_register(stype.rs1());
                 let rs2 = self.get_register(stype.rs2());
                 let op = &instr.op();
@@ -123,7 +130,7 @@ impl Machine {
                     .immediate_value()
                     .expect("S-type should have an immediate value");
 
-                println!("executing {op}(rs1={rs1:#X}, rs2={rs2:#X}, imm={imm})");
+                println!("executing {op}(rs1={rs1_index} [{rs1:#X}], rs2={rs2_index} [{rs2:#X}], imm={imm})");
                 executor::execute_stype(op, rs1, rs2, imm, &mut self.memory)?
             }
             U(utype) => {
@@ -142,6 +149,8 @@ impl Machine {
             }
             B(btype) => {
                 let op = &instr.op();
+                let rs1_index = btype.rs1();
+                let rs2_index = btype.rs2();
                 let rs1 = self.get_register(btype.rs1());
                 let rs2 = self.get_register(btype.rs2());
 
@@ -149,10 +158,11 @@ impl Machine {
                     .immediate_value()
                     .expect("S-type should have an immediate value");
 
-                println!("executing {op}(rs1={rs1:#X}, rs2={rs2:#X}, imm={imm})");
+                println!("executing {op}(rs1={rs1_index} [{rs1:#X}], rs2={rs2_index} [{rs2:#X}], imm={imm})");
                 executor::execute_btype(op, self.pc, rs1, rs2, imm)?
             }
             J(jtype) => {
+                let rd_index = jtype.rd();
                 let op = &instr.op();
                 let rd = self
                     .registers
@@ -163,7 +173,7 @@ impl Machine {
                     .immediate_value()
                     .expect("J-type should have an immediate value");
 
-                println!("executing {op}(rd={rd:#X}, imm={imm})");
+                println!("executing {op}(rd={rd_index} [{rd:#X}], imm={imm})");
                 executor::execute_jtype(op, self.pc, rd, imm)?
             }
         };

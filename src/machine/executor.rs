@@ -1,3 +1,5 @@
+use bilge::prelude::{Integer, u4};
+
 use crate::{
     instruction::definitions::Op,
     machine::{MachineError, Memory},
@@ -80,15 +82,18 @@ pub(crate) fn execute_itype(
             None
         }
         Op::slli => {
-            *rd = rs1 << imm;
+            let reduced_imm = u4::from_u32(imm as u32).as_i32();
+            *rd = rs1 << reduced_imm;
             None
         }
         Op::srli => {
-            *rd = ((rs1 as u32) >> imm) as i32;
+            let reduced_imm = u4::from_u32(imm as u32).as_i32();
+            *rd = ((rs1 as u32) >> reduced_imm) as i32;
             None
         }
         Op::srai => {
-            *rd = rs1 >> imm;
+            let reduced_imm = u4::from_u32(imm as u32).as_i32();
+            *rd = rs1 >> reduced_imm;
             None
         }
         Op::slti => {
