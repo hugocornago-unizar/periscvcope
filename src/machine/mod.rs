@@ -37,15 +37,24 @@ pub struct Machine {
 }
 
 impl Machine {
+    const MEMORY_SIZE: usize = 4 * 1024 * 1024; // 4 MiB
+    const _STACK_SIZE: usize = 256 * 1024; // 256 kiB
+    const STACK_TOP: i32 = Self::MEMORY_SIZE as i32; // grows backwards
+                                                     //
     pub fn new(data: &[u8]) -> Result<Machine, MachineError> {
         let file = ElfFile::from_buffer(data)?;
-        let memory = file.load_memory(4 * 1024 * 1024);
+        let memory = file.load_memory(Self::MEMORY_SIZE);
         let text_section = file.find_section_by_name(".text")?;
         let instructions = ElfFile::load_section(text_section, &memory)?;
+        let mut registers = [0i32; 32];
+
+        // set sp
+        registers[2] = Self::STACK_TOP & !0xF;
+
 
         Ok(Machine {
             pc: file.entry_point(),
-            registers: [0; 32],
+            registers,
             instructions,
             memory,
         })
@@ -87,7 +96,7 @@ impl Machine {
                 let op = &instr.op();
                 let rd = &mut self.get_mut_register(rtype.rd());
 
-                println!("executing {op}(rd={rd}, rs1={rs1}, rs2={rs2})");
+                println!("executing {op}(rd={rd:#X}, rs1={rs1:#X}, rs2={rs2:#X})");
                 executor::execute_rtype(op, rd, rs1, rs2)?
             }
             I(itype) => {
@@ -102,7 +111,7 @@ impl Machine {
                     .immediate_value()
                     .expect("I-type should have an immediate value");
 
-                println!("executing {op}(rd={rd}, rs1={rs1}, imm={imm})");
+                println!("executing {op}(rd={rd:#X}, rs1={rs1:#X}, imm={imm})");
                 executor::execute_itype(op, self.pc, rd, rs1, imm, &self.memory)?
             }
             S(stype) => {
@@ -114,7 +123,7 @@ impl Machine {
                     .immediate_value()
                     .expect("S-type should have an immediate value");
 
-                println!("executing {op}(rs1={rs1}, rs2={rs2}, imm={imm})");
+                println!("executing {op}(rs1={rs1:#X}, rs2={rs2:#X}, imm={imm})");
                 executor::execute_stype(op, rs1, rs2, imm, &mut self.memory)?
             }
             U(utype) => {
@@ -128,7 +137,7 @@ impl Machine {
                     .immediate_value()
                     .expect("U-type should have an immediate value");
 
-                println!("executing {op}(rd={rd}, imm={imm})");
+                println!("executing {op}(rd={rd:#X}, imm={imm})");
                 executor::execute_utype(op, self.pc, rd, imm)?
             }
             B(btype) => {
@@ -140,7 +149,7 @@ impl Machine {
                     .immediate_value()
                     .expect("S-type should have an immediate value");
 
-                println!("executing {op}(rs1={rs1}, rs2={rs2}, imm={imm})");
+                println!("executing {op}(rs1={rs1:#X}, rs2={rs2:#X}, imm={imm})");
                 executor::execute_btype(op, self.pc, rs1, rs2, imm)?
             }
             J(jtype) => {
@@ -154,14 +163,16 @@ impl Machine {
                     .immediate_value()
                     .expect("J-type should have an immediate value");
 
-                println!("executing {op}(rd={rd}, imm={imm})");
+                println!("executing {op}(rd={rd:#X}, imm={imm})");
                 executor::execute_jtype(op, self.pc, rd, imm)?
             }
         };
 
         if let Some(pc) = new_pc {
-            println!("jumping to {pc}");
+            println!("jumping to {pc:#X}");
             self.pc = pc;
+        } else {
+            self.pc += 4;
         }
 
         Ok(())
