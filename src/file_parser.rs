@@ -79,7 +79,7 @@ impl<'a> ElfFile<'a> {
     pub fn find_section_by_name(
         &self,
         segment_name: impl Into<String>,
-    ) -> Result<Rc<[Instruction]>, Error> {
+    ) -> Result<Vec<Instruction>, Error> {
         let segment_name = segment_name.into();
         let section = self
             .parser

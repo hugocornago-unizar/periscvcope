@@ -2,7 +2,6 @@ use std::rc::Rc;
 mod formats;
 mod parser;
 
-use bilge::prelude::u6;
 use thiserror::Error;
 
 use crate::instruction::{formats::{InstructionFormat, RType}, parser::Op};
@@ -23,7 +22,6 @@ pub struct Instruction {
 
 impl Instruction {
     pub fn from_bytes(bytes: [u8; 4]) -> Result<Instruction, Error> {
-        // TODO: return error if the instruction is invalid
         let raw = u32::from_le_bytes(bytes);
 
         let rtype = RType::from(raw);
@@ -37,7 +35,7 @@ impl Instruction {
         Ok(Instruction { op, format: op.format().decode(raw), raw_bytes: bytes })
     }
 
-    pub fn parse_program<'a>(program: impl Into<&'a [u8]>) -> Result<Rc<[Instruction]>, Error> {
+    pub fn parse_program<'a>(program: impl Into<&'a [u8]>) -> Result<Vec<Instruction>, Error> {
         program
             .into()
             .chunks_exact(4 /* 32-bits */)
