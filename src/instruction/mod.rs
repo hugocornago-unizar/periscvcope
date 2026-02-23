@@ -14,7 +14,7 @@ pub enum Error {
     UnknownInstruction(String),
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Copy)]
 pub struct Instruction {
     op: Op,
     format: InstructionFormat,
@@ -47,5 +47,14 @@ impl Instruction {
 
     pub fn format(&self) -> InstructionFormat {
         self.format
+    }
+
+    pub fn is_nop(&self) -> bool {
+        let value = u32::from_le_bytes(self.bytes());
+        value == 0x13
+    }
+
+    pub fn bytes(&self) -> [u8; 4] {
+        self.raw_bytes
     }
 }
