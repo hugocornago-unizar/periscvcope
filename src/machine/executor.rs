@@ -1,4 +1,4 @@
-use bilge::prelude::{Integer, u4};
+use bilge::prelude::{Integer, u4, u5};
 
 use crate::{
     instruction::definitions::Op,
@@ -82,17 +82,17 @@ pub(crate) fn execute_itype(
             None
         }
         Op::slli => {
-            let reduced_imm = u4::extract_u32(imm as u32, 0).as_i32();
+            let reduced_imm = u5::extract_u32(imm as u32, 0).as_i32();
             *rd = rs1 << reduced_imm;
             None
         }
         Op::srli => {
-            let reduced_imm = u4::extract_u32(imm as u32, 0).as_i32();
+            let reduced_imm = u5::extract_u32(imm as u32, 0).as_i32();
             *rd = ((rs1 as u32) >> reduced_imm) as i32;
             None
         }
         Op::srai => {
-            let reduced_imm = u4::extract_u32(imm as u32, 0).as_i32();
+            let reduced_imm = u5::extract_u32(imm as u32, 0).as_i32();
             *rd = rs1 >> reduced_imm;
             None
         }
