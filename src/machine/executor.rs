@@ -299,7 +299,7 @@ pub(crate) fn execute_utype(
             None
         }
         Op::auipc => {
-            *rd = ((pc as i32) + imm) << 12;
+            *rd = (pc as i32) + (imm << 12);
             None
         }
         _ => panic!("executing operation {} as a U-type.", op),
