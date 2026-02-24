@@ -133,4 +133,8 @@ impl<'a> ElfFile<'a> {
     fn check_elf32(&self) -> bool {
         self.parser.ehdr.class == elf::file::Class::ELF32
     }
+
+    pub fn sections(&self) -> elf::parse::ParsingTable<'a, LittleEndian, SectionHeader> {
+        self.sections
+    }
 }
