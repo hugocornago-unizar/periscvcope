@@ -29,7 +29,7 @@ pub(crate) fn execute_rtype(
             None
         }
         Op::and => {
-            *rd = rs1 ^ rs2;
+            *rd = rs1 & rs2;
             None
         }
         Op::sll => {
