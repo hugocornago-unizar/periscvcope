@@ -194,7 +194,7 @@ pub(crate) fn execute_stype(
             let slice = memory
                 .get_mut(addr..addr + 2)
                 .ok_or(MachineError::MemoryError(addr as u32))?;
-            slice.copy_from_slice(&rs2.to_le_bytes());
+            slice.copy_from_slice(&(rs2 as i16).to_le_bytes());
 
             None
         }
