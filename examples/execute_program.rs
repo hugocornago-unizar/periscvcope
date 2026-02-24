@@ -1,7 +1,7 @@
 use std::{fs, path};
 
 use color_eyre::eyre::Result;
-use periscvcope::{machine::Machine};
+use periscvcope::machine::Machine;
 
 use clap::Parser;
 

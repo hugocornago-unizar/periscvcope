@@ -1,4 +1,4 @@
-use bilge::prelude::{Integer, u4, u5};
+use bilge::prelude::{Integer, u5};
 
 use crate::{
     instruction::definitions::Op,

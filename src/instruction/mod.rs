@@ -1,11 +1,11 @@
-pub mod formats;
 pub mod definitions;
+pub mod formats;
 
 use thiserror::Error;
 
 use crate::instruction::{
-    formats::{InstructionFormat, RType},
     definitions::Op,
+    formats::{InstructionFormat, RType},
 };
 
 #[derive(Error, Debug)]

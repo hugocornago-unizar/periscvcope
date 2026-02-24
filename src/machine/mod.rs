@@ -34,7 +34,7 @@ impl Machine {
     const MEMORY_SIZE: usize = 4 * 1024 * 1024; // 4 MiB
     const _STACK_SIZE: usize = 256 * 1024; // 256 kiB
     const STACK_TOP: i32 = Self::MEMORY_SIZE as i32; // grows backwards
-                                                     //
+    //
     pub fn new(data: &[u8]) -> Result<Machine, MachineError> {
         let file = ElfFile::from_buffer(data)?;
         let memory = file.load_memory(Self::MEMORY_SIZE);
@@ -44,7 +44,6 @@ impl Machine {
 
         // set sp
         registers[2] = Self::STACK_TOP & !0xF;
-
 
         Ok(Machine {
             pc: file.entry_point(),
@@ -79,11 +78,17 @@ impl Machine {
             let current_pc = self.pc;
 
             self.execute_next_instruction()?;
-            if self.pc == current_pc { break; };
-            if (current_pc-nops*4..current_pc).contains(&self.pc) { break; }
-            if instr.is_nop() { nops += 1; }
-            else { nops = 0; }
-
+            if self.pc == current_pc {
+                break;
+            };
+            if (current_pc - nops * 4..current_pc).contains(&self.pc) {
+                break;
+            }
+            if instr.is_nop() {
+                nops += 1;
+            } else {
+                nops = 0;
+            }
         }
         Ok(())
     }
@@ -106,7 +111,9 @@ impl Machine {
                 let op = &instr.op();
                 let rd = &mut self.get_mut_register(rtype.rd());
 
-                println!("executing {op}(rd={rd_index} [{rd:#X}], rs1={rs1_index} [{rs1:#X}], rs2={rs2_index} [{rs2:#X}])");
+                println!(
+                    "executing {op}(rd={rd_index} [{rd:#X}], rs1={rs1_index} [{rs1:#X}], rs2={rs2_index} [{rs2:#X}])"
+                );
                 executor::execute_rtype(op, rd, rs1, rs2)?
             }
             I(itype) => {
@@ -123,7 +130,9 @@ impl Machine {
                     .immediate_value()
                     .expect("I-type should have an immediate value");
 
-                println!("executing {op}(rd={rd_index} [{rd:#X}], rs1={rs1_index} [{rs1:#X}], imm={imm})");
+                println!(
+                    "executing {op}(rd={rd_index} [{rd:#X}], rs1={rs1_index} [{rs1:#X}], imm={imm})"
+                );
                 executor::execute_itype(op, self.pc, rd, rs1, imm, &self.memory)?
             }
             S(stype) => {
@@ -137,7 +146,9 @@ impl Machine {
                     .immediate_value()
                     .expect("S-type should have an immediate value");
 
-                println!("executing {op}(rs1={rs1_index} [{rs1:#X}], rs2={rs2_index} [{rs2:#X}], imm={imm})");
+                println!(
+                    "executing {op}(rs1={rs1_index} [{rs1:#X}], rs2={rs2_index} [{rs2:#X}], imm={imm})"
+                );
                 executor::execute_stype(op, rs1, rs2, imm, &mut self.memory)?
             }
             U(utype) => {
@@ -165,7 +176,9 @@ impl Machine {
                     .immediate_value()
                     .expect("S-type should have an immediate value");
 
-                println!("executing {op}(rs1={rs1_index} [{rs1:#X}], rs2={rs2_index} [{rs2:#X}], imm={imm})");
+                println!(
+                    "executing {op}(rs1={rs1_index} [{rs1:#X}], rs2={rs2_index} [{rs2:#X}], imm={imm})"
+                );
                 executor::execute_btype(op, self.pc, rs1, rs2, imm)?
             }
             J(jtype) => {
