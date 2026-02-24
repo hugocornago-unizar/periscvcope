@@ -23,26 +23,14 @@ pub enum Error {
     SectionNotFound(String),
 
     #[error("Error while parsing ELF file: {0}")]
-    ParseError(elf::ParseError),
+    ParseError(#[from] elf::ParseError),
 
     #[error("Error while parsing instruction: {0}")]
-    InstructionParseError(crate::instruction::Error),
+    InstructionParseError(#[from] crate::instruction::Error),
 
     #[error("Unknown error {0}")]
     #[allow(dead_code)]
     Unknown(String),
-}
-
-impl From<elf::ParseError> for Error {
-    fn from(error: elf::ParseError) -> Self {
-        Self::ParseError(error)
-    }
-}
-
-impl From<crate::instruction::Error> for Error {
-    fn from(error: crate::instruction::Error) -> Self {
-        Self::InstructionParseError(error)
-    }
 }
 
 pub struct ElfFile<'a> {

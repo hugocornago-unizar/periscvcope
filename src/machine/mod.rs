@@ -20,13 +20,7 @@ pub enum MachineError {
     MemoryError(u32),
 
     #[error("Error parsing the file: {0}")]
-    ElfError(file_parser::Error),
-}
-
-impl From<file_parser::Error> for MachineError {
-    fn from(value: file_parser::Error) -> Self {
-        Self::ElfError(value)
-    }
+    ElfError(#[from] file_parser::Error),
 }
 
 pub struct Machine {
